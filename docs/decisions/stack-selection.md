@@ -1,0 +1,9 @@
+# Stack and privacy decision
+
+TypeScript 5.9.3, Vite 6.4.3 (compatible with available Node 20.18), Three.js 0.180.0, MediaPipe Tasks Vision 0.10.32, Vitest 4.1.11, Playwright 1.63.0. Exact transitive dependencies are in package-lock.json. These are deliberately pinned compatible releases, not a claim that every package is the newest. Registry check found Three 0.186.0 and MediaPipe 1.0.1; using the inspected 0.10.32 loader keeps the local Motion Fighter adaptation auditable.
+
+WebGL2 presents a deterministic 2D simulation through original 3D models. WebGPU is deferred. Hand inference runs in a worker and uses a separate timing/ownership boundary. The input model is Hand Landmarker with 21 points per hand and numHands2, not Motion Fighter's 33-joint Pose Landmarker.
+
+Model: [Google Hand Landmarker float16 revision1](https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task), 7,819,105 bytes, SHA256 `fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1`. Runtime loaders copied from pinned npm package; `.mjs` adds an export to the exact ModuleFactory. Asset manifest records every generated loader/WASM hash.
+
+[MediaPipe's current privacy notice](https://developers.google.com/edge/mediapipe/solutions/tasks#mediapipe_tasks_privacy_notice) distinguishes local input processing from utilization/performance metrics. This application stores/uploads no frames or landmarks, requests no microphone, and serves its model/runtime locally. Its shipped CSP restricts network connections to the app origin, blocking external metrics endpoints. No telemetry collector exists in application code. The bootstrap privacy details disclose the upstream notice and this policy; network behavior is tested separately from inference correctness. Hosting must preserve CSP for workers, not only the document meta tag. Do not loosen `connect-src` to broad Google/CDN origins to fix a load error.

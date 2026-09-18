@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.superpowers/
+.worktrees/
+test-results/
+playwright-report/
+public/runtime/
+public/models/*.task
+public/models/manifest.json
+.DS_Store

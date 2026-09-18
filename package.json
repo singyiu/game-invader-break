@@ -1,0 +1,40 @@
+{
+  "name": "invader-break",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.18"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && node scripts/release-manifest.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "playwright test",
+    "format": "prettier --write src tests scripts *.json *.ts *.html",
+    "format:check": "prettier --check src tests scripts *.json *.ts *.html",
+    "lint": "eslint src tests scripts",
+    "assets:prepare": "node scripts/prepare-assets.mjs",
+    "assets:verify": "node scripts/verify-assets.mjs",
+    "prebuild": "npm run assets:prepare && npm run assets:verify"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.32",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.19.15",
+    "@types/three": "0.180.0",
+    "typescript": "5.9.3",
+    "vite": "6.4.3",
+    "vitest": "4.1.11",
+    "eslint": "9.39.1",
+    "@eslint/js": "9.39.1",
+    "typescript-eslint": "8.48.1",
+    "prettier": "3.7.4"
+  }
+}
