@@ -1,5 +1,7 @@
 ![Invader Break screenshot](docs/art/screenshot_01.png)
 
+[Play the game](https://game-invader-break.vercel.app/)
+
 # Invader Break
 
 Created with **GPT-6 ASTRA**.
