@@ -60,8 +60,8 @@ export function mountShell(root: HTMLElement): void {
  </section>
  <footer class="site-footer">
   <span>INVADER BREAK <b>© 2026</b></span>
-  <span class="footer-mid">HOLD THE LINE. BREAK THE INVASION.</span>
-  <span>CAMERA + HAND POSITION <span class="tiny-cross">+</span></span>
+  <span class="footer-mid">HANDS UP. INVADERS DOWN.</span>
+  <span>GPT-6 ASTRA + CAMERA <span class="tiny-cross">+</span></span>
   <a class="footer-link" href="https://github.com/singyiu/game-invader-break" target="_blank" rel="noopener noreferrer" aria-label="View Invader Break on GitHub (opens in a new tab)">GITHUB <span aria-hidden="true">↗</span></a>
  </footer>
  <div class="mobile-notice">Best experienced on a laptop or desktop with a camera.</div>
