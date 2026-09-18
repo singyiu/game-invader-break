@@ -594,6 +594,8 @@ button {
   max-width: 1640px;
   margin: 0 auto;
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   justify-content: space-between;
   align-items: center;
   padding: 0 56px 26px;
@@ -614,6 +616,11 @@ button {
 .site-footer .tiny-cross {
   margin-left: 10px;
   font-size: var(--text-body);
+}
+.footer-link {
+  color: var(--cyan);
+  text-underline-offset: 4px;
+  white-space: nowrap;
 }
 .mobile-notice {
   display: none;

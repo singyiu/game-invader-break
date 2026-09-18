@@ -1,5 +1,7 @@
 ![Invader Break screenshot](docs/art/screenshot_01.png)
 
+![Invader Break screenshot 2](docs/art/screenshot_02.png)
+
 [Play the game](https://game-invader-break.vercel.app/)
 
 # Invader Break
