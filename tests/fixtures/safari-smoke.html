@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invader Break Safari smoke fixture</title>
+    <style>
+      #safari-smoke-status {
+        position: fixed;
+        z-index: 20;
+        top: 12px;
+        right: 12px;
+        max-width: min(420px, calc(100vw - 24px));
+        padding: 8px 10px;
+        border: 1px solid #65e6f080;
+        background: #06111de8;
+        color: #b8f6ff;
+        font:
+          12px/1.45 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <aside id="safari-smoke-status" aria-live="polite">
+      loading smoke fixture…
+    </aside>
+    <div id="app"></div>
+    <script type="module" src="./safari-smoke.ts"></script>
+  </body>
+</html>

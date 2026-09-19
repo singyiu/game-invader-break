@@ -64,7 +64,9 @@ npm run build
 npm run preview
 ```
 
-Browser tests require Playwright Chromium (`npx playwright install chromium` if absent). They use a development test server at port 4175 with live reload disabled and a production preview at port 4176. Most control tests use synthetic camera observations; the production check exercises the real camera scheduler and ML worker with a test video stream. Synthetic controls are never included in the production entry. Tests do not establish physical hand-tracking latency or human playability.
+Browser tests run in Chromium and WebKit (`npx playwright install chromium webkit` if absent). To run just the Safari-engine checks, use `npm run test:browser -- --project=webkit`. They use a development test server at port 4175 with live reload disabled and a production preview at port 4176. Most control tests use synthetic camera observations; the production check exercises the real camera scheduler and ML worker with a test video stream. Synthetic controls are never included in the production entry. Tests do not establish physical hand-tracking latency or human playability.
+
+For Safari, use an up-to-date desktop Safari on macOS Sonoma 14 or newer and allow camera access for the site. The worker needs OffscreenCanvas with WebGL, which [WebKit introduced in Safari 17 on macOS Sonoma](https://webkit.org/blog/14445/webkit-features-in-safari-17-0/). Camera startup continues if browser audio activation stalls or fails. WebKit automation is supporting evidence, not a substitute for a physical-camera check in Safari; see the [Safari compatibility investigation](docs/validation/2026-09-19-safari.md).
 
 `npm run build` automatically prepares and verifies the camera assets before compiling. Model files and the generated runtime are intentionally not committed: preparation copies the pinned MediaPipe runtime from `node_modules`, downloads the pinned hand model from Google Storage when absent, and verifies its SHA-256. A fresh build therefore needs network access to download the model. Local development still needs the explicit `npm run assets:prepare` step above.
 

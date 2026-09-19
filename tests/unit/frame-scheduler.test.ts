@@ -48,6 +48,34 @@ function fakeVideo() {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("FrameScheduler", () => {
+  it("uses the advancing video clock when Safari camera metadata stays at zero", async () => {
+    const video = fakeVideo();
+    vi.stubGlobal("createImageBitmap", async () => bitmap());
+    const received: CapturedFrame[] = [];
+    const scheduler = new FrameScheduler(video as unknown as HTMLVideoElement, {
+      onFrame: (frame) => received.push(frame),
+      onError: (message) => {
+        throw new Error(message);
+      },
+    });
+
+    scheduler.start();
+    for (const time of [0, 0.02, 0.04]) {
+      video.currentTime = time;
+      video.fire(100 + time * 1_000, 0);
+      await Promise.resolve();
+      scheduler.completeInference();
+    }
+    expect(received.map((frame) => frame.mediaTime)).toEqual([0, 20, 40]);
+    expect(received.map((frame) => frame.capturedAt)).toEqual([100, 120, 140]);
+
+    // A repeated callback with neither clock advancing is still a duplicate.
+    video.fire(150, 0);
+    await Promise.resolve();
+    expect(received).toHaveLength(3);
+    scheduler.stop();
+  });
+
   it("keeps one inference in flight and replaces pending work with the newest frame", async () => {
     const video = fakeVideo();
     const bitmaps = [bitmap(), bitmap(), bitmap()];

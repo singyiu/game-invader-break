@@ -1,31 +1,36 @@
 import { expect, test } from "@playwright/test";
 import { syntheticCamera, moveHand } from "../fixtures/camera";
-import { mkdir } from "node:fs/promises";
-const directory = "docs/validation/screenshots";
-test("captures the actual landing layout at laptop size", async ({ page }) => {
+test("captures the actual landing layout at laptop size", async ({
+  page,
+}, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  await mkdir(directory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: "Invader Break", exact: true }),
   ).toBeVisible();
   await page.waitForTimeout(700);
-  await page.screenshot({ path: `${directory}/landing.png`, fullPage: true });
+  const screenshotPath = testInfo.outputPath("landing.png");
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  await testInfo.attach("landing", {
+    path: screenshotPath,
+    contentType: "image/png",
+  });
   expect(errors).toEqual([]);
 });
 for (const scene of ["combat", "boss", "reduced", "powers"] as const) {
-  test(`renders ${scene} at 720p without WebGL errors`, async ({ page }) => {
+  test(`renders ${scene} at 720p without WebGL errors`, async ({
+    page,
+  }, testInfo) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("console", (message) => {
       if (message.type() === "error") errors.push(message.text());
     });
-    await mkdir(directory, { recursive: true });
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.route("**/src/main.ts*", (route) =>
       route.fulfill({
@@ -54,9 +59,11 @@ for (const scene of ["combat", "boss", "reduced", "powers"] as const) {
     );
     expect(stats.drawCalls).toBeGreaterThan(0);
     expect(stats.triangles).toBeGreaterThan(0);
-    await page.screenshot({
-      path: `${directory}/${scene}-720p.png`,
-      fullPage: true,
+    const screenshotPath = testInfo.outputPath(`${scene}-720p.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await testInfo.attach(scene, {
+      path: screenshotPath,
+      contentType: "image/png",
     });
     expect(errors).toEqual([]);
   });
@@ -64,7 +71,7 @@ for (const scene of ["combat", "boss", "reduced", "powers"] as const) {
 
 test("camera exit stays reachable with larger text at narrow viewport widths", async ({
   page,
-}) => {
+}, testInfo) => {
   await syntheticCamera(page);
   await page.setViewportSize({ width: 800, height: 850 });
   await page.goto("/");
@@ -78,9 +85,11 @@ test("camera exit stays reachable with larger text at narrow viewport widths", a
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.screenshot({
-    path: `${directory}/setup-narrow.png`,
-    fullPage: true,
+  const screenshotPath = testInfo.outputPath("setup-narrow.png");
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  await testInfo.attach("setup-narrow", {
+    path: screenshotPath,
+    contentType: "image/png",
   });
   await button.click();
   await expect(page.locator("#app")).toHaveAttribute("data-phase", "landing");

@@ -1,17 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
-
-const screenshotDirectory = "docs/validation/screenshots";
 
 test("renders readable outbound and return flight paths in the reduced-effects arena", async ({
   page,
-}) => {
+}, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  await mkdir(screenshotDirectory, { recursive: true });
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.route("**/src/main.ts*", (route) =>
     route.fulfill({
@@ -103,9 +99,11 @@ test("renders readable outbound and return flight paths in the reduced-effects a
     ).testStageFlights("reduced"),
   );
   expect(reduced.drawCalls).toBeGreaterThanOrEqual(baseline.drawCalls + 4);
-  await page.screenshot({
-    path: `${screenshotDirectory}/flights-720p.png`,
-    fullPage: true,
+  const flightsScreenshotPath = testInfo.outputPath("flights-720p.png");
+  await page.screenshot({ path: flightsScreenshotPath, fullPage: true });
+  await testInfo.attach("flights-720p", {
+    path: flightsScreenshotPath,
+    contentType: "image/png",
   });
   const returningBaseline = await page.evaluate(() =>
     (
@@ -131,9 +129,11 @@ test("renders readable outbound and return flight paths in the reduced-effects a
     returningBaseline.drawCalls + 4,
   );
   expect(returning.triangles).toBeGreaterThan(returningBaseline.triangles);
-  await page.screenshot({
-    path: `${screenshotDirectory}/return-flight-720p.png`,
-    fullPage: true,
+  const returnScreenshotPath = testInfo.outputPath("return-flight-720p.png");
+  await page.screenshot({ path: returnScreenshotPath, fullPage: true });
+  await testInfo.attach("return-flight-720p", {
+    path: returnScreenshotPath,
+    contentType: "image/png",
   });
   expect(errors).toEqual([]);
 });

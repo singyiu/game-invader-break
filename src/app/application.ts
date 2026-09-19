@@ -64,6 +64,7 @@ export class InvaderBreakApp {
   private lastUiUpdate = 0;
   private notice = "";
   private noticeUntil = 0;
+  private soundUnavailable = false;
   private observer: ResizeObserver;
   private elements: Record<string, HTMLElement> = {};
   private readonly hidden = () => {
@@ -161,11 +162,25 @@ export class InvaderBreakApp {
     this.controller.reset();
     this.applyCalibration();
     this.performancePaused = false;
-    const audioReady = await this.audio.activate();
-    if (!this.startupCurrent(generation)) return;
-    if (!audioReady)
-      this.elements["quality-label"].textContent =
-        "SOUND UNAVAILABLE · VISUAL CUES ACTIVE";
+    // Safari can leave audio resume pending; camera startup must not wait for it.
+    void this.audio
+      .activate()
+      .catch(() => false)
+      .then((audioReady) => {
+        if (
+          this.disposed ||
+          generation !== this.startupGeneration ||
+          document.hidden
+        ) {
+          if (
+            this.disposed ||
+            ["landing", "suspended", "error"].includes(this.session.phase)
+          )
+            this.audio.suspend();
+          return;
+        }
+        this.soundUnavailable = !audioReady;
+      });
     await this.camera.start();
     if (!this.startupCurrent(generation)) return;
     if (this.camera.running) this.session.send("camera-ready");
@@ -583,7 +598,9 @@ export class InvaderBreakApp {
     e["hands-count"].textContent =
       `${hands.length} ${hands.length === 1 ? "HAND" : "HANDS"} DETECTED`;
     e["quality-label"].textContent = this.camera.running
-      ? "ON-DEVICE · VIDEO ONLY"
+      ? this.soundUnavailable
+        ? "SOUND UNAVAILABLE · VISUAL CUES ACTIVE"
+        : "ON-DEVICE · VIDEO ONLY"
       : "CAMERA OFF";
     e["tracking-hint"].textContent =
       this.session.phase === "playing"

@@ -24,6 +24,7 @@ export class FrameScheduler {
   private pendingFrame: CapturedFrame | null = null;
   private callbackId: number | null = null;
   private lastFallbackTime = -1;
+  private lastMediaTime = -1;
 
   constructor(
     private readonly video: HTMLVideoElement,
@@ -66,7 +67,16 @@ export class FrameScheduler {
       this.callbackId = this.video.requestVideoFrameCallback(
         (now, metadata) => {
           this.schedule();
-          void this.capture(now, metadata.mediaTime * 1_000);
+          // Safari camera streams can report mediaTime=0 for every new frame.
+          // Use the video clock when metadata stalls, without admitting duplicates.
+          const mediaTime =
+            metadata.mediaTime > this.lastMediaTime
+              ? metadata.mediaTime
+              : this.video.currentTime;
+          if (!Number.isFinite(mediaTime) || mediaTime <= this.lastMediaTime)
+            return;
+          this.lastMediaTime = mediaTime;
+          void this.capture(now, mediaTime * 1_000);
         },
       );
       return;

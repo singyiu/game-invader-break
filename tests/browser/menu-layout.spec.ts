@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("setup instructions and hand-selectable menus remain fully visible with larger text on laptop screens", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.route("**/src/main.ts*", (route) =>
     route.fulfill({
       contentType: "application/javascript",
@@ -83,9 +83,13 @@ test("setup instructions and hand-selectable menus remain fully visible with lar
           )
           .toEqual([]);
         if (large && menu.phase.startsWith("reach-")) {
-          await page.screenshot({
-            path: `docs/validation/screenshots/${menu.phase}-${viewport.width}.png`,
-            fullPage: true,
+          const screenshotPath = testInfo.outputPath(
+            `${menu.phase}-${viewport.width}.png`,
+          );
+          await page.screenshot({ path: screenshotPath, fullPage: true });
+          await testInfo.attach(`${menu.phase}-${viewport.width}`, {
+            path: screenshotPath,
+            contentType: "image/png",
           });
         }
       }

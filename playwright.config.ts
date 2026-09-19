@@ -6,9 +6,6 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4175",
     viewport: { width: 1440, height: 1000 },
-    launchOptions: {
-      args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl"],
-    },
     screenshot: "only-on-failure",
   },
   webServer: [
@@ -24,5 +21,16 @@ export default defineConfig({
       timeout: 60000,
     },
   ],
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        browserName: "chromium",
+        launchOptions: {
+          args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl"],
+        },
+      },
+    },
+    { name: "webkit", use: { browserName: "webkit" } },
+  ],
 });

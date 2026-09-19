@@ -1,0 +1,10 @@
+Source: MediaPipe Hand Landmarker sample notebook
+https://github.com/google-ai-edge/mediapipe-samples/blob/main/examples/hand_landmarker/python/hand_landmarker.ipynb
+
+The notebook downloads woman_hands.jpg from:
+https://storage.googleapis.com/mediapipe-tasks/hand_landmarker/woman_hands.jpg
+
+The notebook identifies the source photograph as Unsplash photo mt2fyrdXxzk:
+https://unsplash.com/photos/mt2fyrdXxzk
+
+Usage terms: https://unsplash.com/license
