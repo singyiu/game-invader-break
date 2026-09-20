@@ -24,9 +24,9 @@ Open the local URL printed by Vite. Click **Enable camera & play** to grant came
 
 1. Hold a relaxed hand in the center; calibrate a comfortable left and right reach.
 2. The game starts automatically after calibration with recommended defaults and a short launch countdown. No practice or setup menus to complete.
-3. Move horizontally to steer. Add a second hand for two wide paddles and a 1.5× score bonus while both hands are active.
+3. Move horizontally to steer. Add a second hand for two wide paddles and a 1.5× score bonus while both hands are active. Add or remove one hand to switch modes without pausing; a brief confirmation window prevents detection flicker from changing the paddles.
 4. After a run, hold over a menu option for one second to retry or adjust settings; move away before selecting again.
-5. Remove your hands to pause. Return and hold in the center to continue.
+5. Remove all your hands to pause. Return and hold in the center to continue.
 6. Click **Disconnect camera** in the bottom camera panel at any time to stop the camera, quit the run, and return to the start screen.
 
 New players start with comfortable reach, automatic one-/two-hand switching, music at 30%, and sound effects at 65%. Saved preferences and your system’s reduced-motion preference are respected. Text is larger throughout; an additional Large text option remains in settings.

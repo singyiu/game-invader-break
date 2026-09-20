@@ -16,10 +16,10 @@ import {
 
 const FIRST_HAND_STABLE_MS = 300;
 const SECOND_HAND_STABLE_MS = 350;
+const MODE_CHANGE_STABLE_MS = 150;
 const SHORT_OCCLUSION_MS = 150;
-const RECONFIGURE_MS = 350;
+const LOST_HANDS_MS = 350;
 const RETURN_COUNTDOWN_MS = 300;
-const SHAPE_COUNTDOWN_MS = 700;
 
 export class HandController {
   private readonly tracker = new HandTracks();
@@ -36,12 +36,11 @@ export class HandController {
   private secondCandidateId: number | null = null;
   private secondCandidateSince = 0;
   private readonly absentSince = new Map<number, number>();
+  private allAbsentSince: number | null = null;
   private lostAll = false;
   private needsCenterDwell = false;
   private ambiguous = false;
   private resumeUntil = 0;
-  private resumeStatus: Extract<TrackingStatus, "paused" | "reconfiguring"> =
-    "paused";
 
   update(frame: HandFrame): void {
     if (
@@ -95,63 +94,42 @@ export class HandController {
       return;
     }
 
-    const allWereAbsent =
-      this.activeIds.length > 0 &&
-      this.activeIds.every((id) => this.absentSince.has(id));
-    const returnedDurations: number[] = [];
+    const visibleActive = this.activeIds.filter((id) => visibleSet.has(id));
+    const allAbsentFor =
+      this.allAbsentSince === null ? 0 : frame.capturedAt - this.allAbsentSince;
+    if (visibleActive.length === 0) {
+      this.allAbsentSince ??= frame.capturedAt;
+    } else this.allAbsentSince = null;
     for (const id of this.activeIds) {
       if (visibleSet.has(id)) {
-        const since = this.absentSince.get(id);
-        if (since !== undefined)
-          returnedDurations.push(frame.capturedAt - since);
         this.absentSince.delete(id);
       } else if (!this.absentSince.has(id)) {
         this.absentSince.set(id, frame.capturedAt);
       }
     }
 
-    const allCurrentlyAbsent = this.activeIds.every(
-      (id) => !visibleSet.has(id),
-    );
-    const longestCurrentAbsence = Math.max(
-      0,
-      ...this.activeIds.map(
-        (id) =>
-          frame.capturedAt - (this.absentSince.get(id) ?? frame.capturedAt),
-      ),
-    );
-    if (
-      (allCurrentlyAbsent && longestCurrentAbsence >= RECONFIGURE_MS) ||
-      (allWereAbsent &&
-        returnedDurations.some((duration) => duration >= RECONFIGURE_MS))
-    ) {
+    if (allAbsentFor >= LOST_HANDS_MS) {
       this.lostAll = true;
       this.needsCenterDwell = false;
       this.updateStableCandidate(visibleIds, frame.capturedAt, true);
       return;
     }
 
-    if (returnedDurations.some((duration) => duration >= SHORT_OCCLUSION_MS)) {
-      this.beginCountdown(frame.arrivedAt, RETURN_COUNTDOWN_MS, "paused");
+    if (visibleActive.length > 0 && allAbsentFor >= SHORT_OCCLUSION_MS) {
+      this.resumeUntil = frame.arrivedAt + RETURN_COUNTDOWN_MS;
     }
 
     if (this.mode === 2) {
-      const visibleActive = this.activeIds.filter((id) => visibleSet.has(id));
       if (visibleActive.length === 1) {
         const missingId = this.activeIds.find((id) => id !== visibleActive[0])!;
         const missingFor =
           frame.capturedAt -
           (this.absentSince.get(missingId) ?? frame.capturedAt);
-        if (missingFor >= RECONFIGURE_MS) {
+        if (missingFor >= MODE_CHANGE_STABLE_MS) {
           this.activeIds = [visibleActive[0]!];
           this.mode = 1;
           this.absentSince.clear();
           this.resetSecondCandidate();
-          this.beginCountdown(
-            frame.arrivedAt,
-            SHAPE_COUNTDOWN_MS,
-            "reconfiguring",
-          );
         }
       }
       return;
@@ -172,12 +150,11 @@ export class HandController {
       this.secondCandidateSince = frame.capturedAt;
       return;
     }
-    if (frame.capturedAt - this.secondCandidateSince >= SECOND_HAND_STABLE_MS) {
+    if (frame.capturedAt - this.secondCandidateSince >= MODE_CHANGE_STABLE_MS) {
       this.activeIds = [activeId, secondId];
       this.mode = 2;
       this.absentSince.clear();
       this.resetSecondCandidate();
-      this.beginCountdown(frame.arrivedAt, SHAPE_COUNTDOWN_MS, "reconfiguring");
     }
   }
 
@@ -188,12 +165,17 @@ export class HandController {
     if (this.mode === 0) return this.makeIntent([], "searching", true, 0);
     if (this.needsCenterDwell || this.lostAll)
       return this.makeIntent(targets, "paused", true, 0);
-    if (this.ambiguous || this.absentSince.size > 0)
+    // Keep the live hand responsive during the short split/merge debounce.
+    // A missing partner stays at its last position until the merge is confirmed.
+    if (
+      this.ambiguous ||
+      this.activeIds.every((id) => this.absentSince.has(id))
+    )
       return this.makeIntent(targets, "uncertain", true, 0);
     if (now < this.resumeUntil) {
       return this.makeIntent(
         targets,
-        this.resumeStatus,
+        "paused",
         true,
         Math.ceil(this.resumeUntil - now),
       );
@@ -236,6 +218,7 @@ export class HandController {
     this.stableSince = 0;
     this.resetSecondCandidate();
     this.absentSince.clear();
+    this.allAbsentSince = null;
     this.lostAll = false;
     this.needsCenterDwell = false;
     this.ambiguous = false;
@@ -246,6 +229,7 @@ export class HandController {
     this.activeIds = ids.slice(0, 2);
     this.mode = this.activeIds.length as 1 | 2;
     this.absentSince.clear();
+    this.allAbsentSince = null;
     this.resetSecondCandidate();
   }
 
@@ -267,15 +251,6 @@ export class HandController {
   private resetSecondCandidate(): void {
     this.secondCandidateId = null;
     this.secondCandidateSince = 0;
-  }
-
-  private beginCountdown(
-    now: number,
-    duration: number,
-    status: typeof this.resumeStatus,
-  ): void {
-    this.resumeStatus = status;
-    this.resumeUntil = now + duration;
   }
 
   private currentTargets(): PaddleTarget[] {

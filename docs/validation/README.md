@@ -1,12 +1,12 @@
 # Candidate validation
 
-This directory separates reproducible software checks from human/device qualification. See [implementation status](implementation-status.md) for task coverage. The original implementation checks are recorded in [implementation evidence](implementation-evidence.md); the calibration and camera controls are covered in the [September 17 usability update](2026-09-17-usability-update.md), followed by the [endless powers update](2026-09-17-endless-powers.md), [five-level speed and patterned-flight update](2026-09-17-speed-and-flight.md), [return-flight update](2026-09-17-return-flight.md), and [Safari compatibility investigation](2026-09-19-safari.md).
+This directory separates reproducible software checks from human/device qualification. See [implementation status](implementation-status.md) for task coverage. The original implementation checks are recorded in [implementation evidence](implementation-evidence.md); the calibration and camera controls are covered in the [September 17 usability update](2026-09-17-usability-update.md), followed by the [endless powers update](2026-09-17-endless-powers.md), [five-level speed and patterned-flight update](2026-09-17-speed-and-flight.md), [return-flight update](2026-09-17-return-flight.md), [Safari compatibility investigation](2026-09-19-safari.md), and [continuous hand-mode transitions](2026-09-19-hand-transitions.md).
 
 ## Implemented and exercised
 
 - Pure deterministic simulation with swept collision chronology, overlap/union paddles, shared damage grace, six repeating formations, five invader types and a recurring petal/core boss, with increasing difficulty and no final level.
 - Camera session, one-in-flight/newest-frame scheduling, bitmap ownership and worker protocol. Real pinned Hand Landmarker initialization and blank-frame inference in browser, in addition to isolated lifecycle tests.
-- Stable hand association, capture-clock mode confirmation, shared calibration, paused loss/recovery and one/two-hand mapping.
+- Stable hand association, capture-clock mode confirmation without split/merge pauses, shared calibration, paused total-loss/recovery and one/two-hand mapping.
 - Browser bootstrap denial, hand-only calibration followed by automatic play, dwell settings, split/merge, rest/reacquisition, game over, retry, camera disconnect, hidden-page camera release and delayed-start cancellation.
 - Five collectible powers with combat-time expiry, safe multiball recovery, piercing fireballs and shield repair; two-hand score bonuses and highest-level records.
 - Original realtime procedural art and an original layered synthesized soundtrack, local validated profiles and hashed same-origin assets.
